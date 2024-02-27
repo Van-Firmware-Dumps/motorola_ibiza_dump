@@ -1,0 +1,33 @@
+#fps dual sensor
+service chipone_ident /vendor/bin/hw/chipone_ident
+    class late_start
+    user system
+    group system
+    oneshot
+    disabled
+
+service vendor.ident-fps-overlay-sh /vendor/bin/init.oem.fingerprint.overlay.sh
+    class core
+    user root
+    group drmrpc system
+    oneshot
+    disabled
+
+on post-fs-data
+    exec_start vendor.ident-fps-overlay-sh
+    chown system system /dev/fpsensor
+    chmod 0660 /dev/fpsensor
+
+on boot && property:ro.vendor.mot.gki.path=5.4-gki
+    exec u:r:vendor_modprobe:s0 -- /vendor/bin/modprobe -r -d /vendor/lib/modules/${ro.vendor.mot.gki.path} nova_0flash_mmi chipone_tddi_mmi
+    insmod /vendor/lib/modules/${ro.vendor.mot.gki.path}/nova_0flash_mmi.ko
+    insmod /vendor/lib/modules/${ro.vendor.mot.gki.path}/chipone_tddi_mmi.ko
+    insmod /vendor/lib/modules/${ro.vendor.mot.gki.path}/nfc_i2c.ko
+
+on late-init
+    insmod /vendor/lib/modules/${ro.vendor.mot.gki.path}/mmi-smbcharger-iio.ko
+    insmod /vendor/lib/modules/${ro.vendor.mot.gki.path}/qpnp_adaptive_charge.ko
+
+on charger
+    insmod /vendor/lib/modules/${ro.vendor.mot.gki.path}/mmi-smbcharger-iio.ko
+    insmod /vendor/lib/modules/${ro.vendor.mot.gki.path}/qpnp_adaptive_charge.ko
