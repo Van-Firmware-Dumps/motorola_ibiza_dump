@@ -1,0 +1,14 @@
+# user 12 S1RF32.27-25-12-1-2 70ec1 release-keys
+- manufacturer: motorola
+- platform: holi
+- codename: ibiza
+- flavor: user
+- release: 12
+- id: S1RF32.27-25-12-1-2
+- incremental: 70ec1
+- tags: release-keys
+- fingerprint: motorola/ibiza_retail/ibiza:11/S1RF32.27-25-12-1-2/70ec1:user/release-keys
+- is_ab: true
+- brand: motorola
+- branch: user-12-S1RF32.27-25-12-1-2-70ec1-release-keys
+- repo: motorola_ibiza_dump
