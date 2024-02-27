@@ -1,0 +1,70 @@
+on property:ro.vendor.hw.ram=4GB
+    setprop ro.MAX_HIDDEN_APPS 32
+    setprop ro.config.use_compaction true
+    setprop ro.config.compact_action_1 4
+    setprop ro.config.compact_action_2 2
+    setprop ro.vendor.zram.product_swapon true
+    setprop ro.zram.mark_idle_delay_mins 60
+    setprop ro.zram.first_wb_delay_mins 180
+    setprop ro.zram.periodic_wb_delay_hours 24
+on property:ro.vendor.hw.ram=6GB
+    setprop ro.MAX_HIDDEN_APPS 42
+    setprop ro.config.use_compaction false
+    setprop ro.vendor.zram.product_swapon true
+    setprop ro.zram.mark_idle_delay_mins 60
+    setprop ro.zram.first_wb_delay_mins 180
+    setprop ro.zram.periodic_wb_delay_hours 24
+on property:ro.vendor.hw.ram=8GB
+    setprop ro.MAX_HIDDEN_APPS 60
+    setprop ro.config.use_compaction false
+    setprop ro.vendor.zram.product_swapon true
+    setprop ro.zram.mark_idle_delay_mins 60
+    setprop ro.zram.first_wb_delay_mins 180
+    setprop ro.zram.periodic_wb_delay_hours 24
+
+
+
+# Enable Zram writeback for 4~8G RAM on PRC
+on property:persist.sys.zram_wb_size="" && property:ro.product.is_prc=""
+    setprop persist.sys.zram_wb_enabled false
+on property:persist.sys.zram_wb_enabled="" && property:ro.product.is_prc="true"
+    setprop persist.sys.zram_wb_enabled true
+
+# Set Zram writeback size for 4~8G RAM
+on property:ro.vendor.hw.ram=4GB && property:persist.sys.zram_wb_size=""
+    setprop persist.sys.zram_wb_size 1024M
+on property:ro.vendor.hw.ram=6GB && property:persist.sys.zram_wb_size=""
+    setprop persist.sys.zram_wb_size 1536M
+on property:ro.vendor.hw.ram=8GB && property:persist.sys.zram_wb_size="" && property:ro.product.is_prc=""
+    setprop persist.sys.zram_wb_size 2048M
+on property:ro.vendor.hw.ram=8GB && property:persist.sys.zram_wb_size="" && property:ro.product.is_prc="true"
+    setprop persist.sys.zram_wb_size 3072M
+
+
+on property:sys.boot_completed=1 && property:ro.vendor.zram.product_swapon=true
+    trigger sys-boot-completed-set
+
+# We want one opportunity per boot to enable zram, so we
+# use a trigger we fire from the above stanza. If
+# persist.sys.zram_wb_enabled becomes true after boot,
+# we swapon with zramwriteback; If
+# persist.sys.zram_wb_enabled false, we swapon
+# without zramwriteback
+on sys-boot-completed-set && property:persist.sys.zram_wb_enabled=true
+    write /proc/sys/vm/page-cluster 2
+    swapon_all /vendor/etc/fstab_zramwriteback.qcom
+    write /proc/sys/vm/swappiness 100
+    setprop sys.sysctl.swappiness 100
+
+on sys-boot-completed-set && property:persist.sys.zram_wb_enabled=false
+    write /proc/sys/vm/page-cluster 0
+    swapon_all /vendor/etc/fstab.qcom
+    write /proc/sys/vm/swappiness 100
+    setprop sys.sysctl.swappiness 100
+
+#MotoBtAptxMode
+on boot
+    setprop persist.mot_bt.aptx_cert true
+
+on init
+    setprop ro.config.use_freezer false
